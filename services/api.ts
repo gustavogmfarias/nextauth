@@ -75,7 +75,7 @@ api.interceptors.response.use(
 
         return new Promise((resolve, reject) => {
           failedRequestsQueue.push({
-            onSuccess: () => {
+            onSuccess: (token: string) => {
               originalConfig.headers["Authorization"] = `Bearer ${token}`;
               resolve(api(originalConfig));
             },
