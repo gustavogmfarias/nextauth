@@ -1,6 +1,6 @@
 import { createContext, ReactNode, useEffect, useState } from "react";
 import { api } from "../services/api";
-import { setCookie, parseCookies } from "nookies";
+import { setCookie, parseCookies, destroyCookie } from "nookies";
 import Router from "next/router";
 
 type User = {
@@ -22,6 +22,12 @@ type AuthContextData = {
 
 export const AuthContext = createContext({} as AuthContextData);
 
+export function signOut() {
+  destroyCookie(undefined, "nextauth.token");
+  destroyCookie(undefined, "nextauth.refreshToken");
+  Router.push("/");
+}
+
 type AuthProviderProps = {
   children: ReactNode;
 };
@@ -35,10 +41,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const { "nextauth.token": token } = parseCookies();
 
     if (token) {
-      const response = api.get("/me").then((response) => {
-        const { email, permissions, roles } = response.data;
-        setUser({ email, permissions, roles });
-      }); //rota /me porque nesse backend específico é a rota que retorna os dados do usuário logado..
+      const response = api
+        .get("/me")
+        .then((response) => {
+          const { email, permissions, roles } = response.data;
+          setUser({ email, permissions, roles });
+        }) //rota /me porque nesse backend específico é a rota que retorna os dados do usuário logado..
+        .catch((error) => {
+          signOut();
+        });
     }
   }, []);
 
