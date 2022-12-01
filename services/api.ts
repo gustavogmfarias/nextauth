@@ -26,14 +26,14 @@ api.interceptors.response.use(
         const originalConfig = error.config;
 
         if (!isRefreshing) {
-          let isRefreshing = true;
+          isRefreshing = true;
 
           api
             .post("/refresh", { refreshToken })
             .then((response) => {
-              const { token } = response.data.token;
+              const { token } = response.data;
 
-              setCookie(undefined, "nextauth.token", response.data.token, {
+              setCookie(undefined, "nextauth.token", token, {
                 maxAge: 60 * 60 * 24 * 30, //30 dias
                 path: "/",
               });
