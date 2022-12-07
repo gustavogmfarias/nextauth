@@ -2,9 +2,14 @@ import axios, { AxiosError } from "axios";
 import { GetServerSidePropsContext } from "next";
 import { parseCookies, setCookie } from "nookies";
 import { signOut } from "../contexts/AuthContext";
+import { AuthTokenError } from "./errors/AuthTokenError";
 
 let isRefreshing = false;
 let failedRequestsQueue = [];
+
+interface AxiosErrorResponse {
+  code?: string;
+}
 
 export function setupAPIClient(
   ctx: GetServerSidePropsContext | undefined = undefined
@@ -22,7 +27,7 @@ export function setupAPIClient(
     (response) => {
       return response;
     },
-    async (error: AxiosError) => {
+    async (error: AxiosError<AxiosErrorResponse>) => {
       if (error.response.status === 401) {
         if (error.response.data?.code === "token.expired") {
           cookies = parseCookies(ctx);
@@ -103,6 +108,8 @@ export function setupAPIClient(
           //deslogar usuário
           if (process.browser) {
             signOut();
+          } else {
+            return Promise.reject(new AuthTokenError());
           }
         }
       }
