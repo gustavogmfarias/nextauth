@@ -1,10 +1,12 @@
 import { destroyCookie } from "nookies";
 import { useContext, useEffect } from "react";
 import { AuthContext } from "../contexts/AuthContext";
+import { useCan } from "../hooks/UseCan";
 import { setupAPIClient } from "../services/api";
 import { api } from "../services/apiClient";
 import { AuthTokenError } from "../services/errors/AuthTokenError";
 import { withSSRAuth } from "../utils/withSSRAuth";
+import { Can } from "./components/Can";
 
 export default function Dashboard() {
   const { user } = useContext(AuthContext);
@@ -20,7 +22,14 @@ export default function Dashboard() {
       });
   }, []);
 
-  return <h1>Dashboard: {user?.email}</h1>;
+  return (
+    <>
+      <h1>Dashboard: {user?.email}</h1>
+      <Can permissions={["metrics.list"]}>
+        <div>Métricas</div>
+      </Can>
+    </>
+  );
 }
 
 export const getServerSideProps = withSSRAuth(async (ctx) => {
