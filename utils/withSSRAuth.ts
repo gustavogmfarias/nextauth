@@ -28,14 +28,20 @@ export function withSSRAuth<P extends { [key: string]: any }>(
       return { redirect: { destination: "/", permanent: false } };
     }
 
-    const user = decode(token);
-    const { permissions, roles } = options;
+    if (options) {
+      const user = decode<{ permissions: string[]; roles: string[] }>(token);
+      const { permissions, roles } = options;
 
-    const useHasValidPermissions = validateUserPermissions({
-      user,
-      permissions,
-      roles,
-    });
+      const userHasValidPermissions = validateUserPermissions({
+        user,
+        permissions,
+        roles,
+      });
+
+      if (!userHasValidPermissions) {
+        return { redirect: { destination: "/dashboard", permanent: false } };
+      }
+    }
 
     try {
       return await fn(ctx);
